@@ -1,0 +1,100 @@
+<?php
+
+namespace today\revalidate;
+
+use Craft;
+use craft\base\Model;
+use craft\base\Plugin;
+use craft\elements\Category;
+use craft\events\ElementEvent;
+use craft\events\RegisterComponentTypesEvent;
+use craft\services\Elements;
+use craft\services\Utilities;
+use today\revalidate\models\Settings;
+use today\revalidate\services\RevalidateService;
+use today\revalidate\utilities\RevalidateUtility;
+use yii\base\Event;
+use craft\events\ModelEvent;
+use verbb\navigation\elements\Node;
+use craft\events\RegisterUrlRulesEvent;
+use craft\web\UrlManager;
+
+/**
+ * Revalidate plugin
+ *
+ * @method static Revalidate getInstance()
+ * @method Settings getSettings()
+ */
+class Revalidate extends Plugin
+{
+    public string $schemaVersion = '1.0.0';
+
+    public static function config(): array
+    {
+        return [
+            'components' => [
+                'revalidate' => RevalidateService::class,
+            ],
+        ];
+    }
+
+    public function init()
+    {
+        parent::init();
+        // self::$plugin = $this;
+
+        // Defer most setup tasks until Craft is fully initialized
+        Craft::$app->onInit(function() {
+            $this->attachEventHandlers();
+            $this->registerUtility();
+        });
+    }
+
+    protected function createSettingsModel(): ?Model
+    {
+        return Craft::createObject(Settings::class);
+    }
+
+    private function attachEventHandlers(): void
+    {
+        // Register event handlers here ...
+        // (see https://craftcms.com/docs/4.x/extend/events.html to get started)
+        if ($this->getSettings()->sync) {
+            Event::on(
+                Elements::class,
+                Elements::EVENT_AFTER_SAVE_ELEMENT,
+                function (ElementEvent $event) {
+                    // Make sure element is 
+                    $this->getService()->revalidateElement($event->element);
+                }
+            );
+
+            // Add Events for the URL Rules
+            Event::on(
+                UrlManager::class,
+                UrlManager::EVENT_REGISTER_SITE_URL_RULES,
+                function(RegisterUrlRulesEvent $event) {
+                    $event->rules = array_merge($event->rules, [
+                        'GET api/scheduled-entries' => 'revalidate/scheduled-entries/resolve-request',
+                    ]);
+                }
+            );
+        }
+    }
+
+    private function registerUtility(): void
+    {
+        Event::on(
+            Utilities::class,
+            Utilities::EVENT_REGISTER_UTILITY_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = RevalidateUtility::class;
+            }
+        );
+    }
+
+    public function getService()
+    {
+        return $this->get('revalidate');
+    }
+}

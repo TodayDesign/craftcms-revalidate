@@ -1,0 +1,33 @@
+{
+    "name": "today/revalidate",
+    "description": "A CraftCMS plugin to revalidate tags and paths on Next.js websites.",
+    "type": "craft-plugin",
+    "require": {
+        "php": ">=8.0.2",
+        "craftcms/cms": "*",
+        "guzzlehttp/guzzle": "^7.0.1",
+        "verbb/navigation": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "today\\revalidate\\": "src/"
+        }
+    },
+    "extra": {
+        "handle": "revalidate",
+        "name": "Revalidate",
+        "developer": "Today",
+        "documentationUrl": "",
+        "class": "today\\revalidate\\Revalidate"
+    },
+    "config": {
+        "sort-packages": true,
+        "platform": {
+            "php": "8.0.2"
+        },
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true,
+            "craftcms/plugin-installer": true
+        }
+    }
+}

@@ -1,0 +1,132 @@
+<?php
+
+namespace today\revalidate\services;
+
+use Craft;
+use craft\base\Component;
+use revalidate\Revalidate;
+use craft\events\ElementEvent;
+use craft\helpers\ElementHelper;
+use craft\elements\Entry;
+use GuzzleHttp\Client;
+use craft\helpers\Json;
+
+class RevalidateService extends Component
+{
+  public function revalidateElement($element) {
+    // If first save, revalidate paths
+    // if ($element->firstSave) {
+    //   $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [ 'tags' => ['/[[...uri]]'], 'paths' => []]);
+    //   return;
+    // }
+
+    if (!$this->isUpdatedElement($element)) {
+      return;
+    }
+
+    // Get settings from plugin
+    $settings = $this->getSettings();
+    $tags = [];
+    $paths = [];
+    $siteUrl = [];
+    
+    // Get GraphQL type
+    $graphqlType = $element->getGqlTypeName();
+
+    // If element has `uri` property, use that
+    if (isset($element->uri)) {
+      // $paths[] = $element->uri === '__home__' ? '/' : ('/' . $element->uri . '/');
+      $tags[] = $element->uri;
+    }
+
+    // Get site URL from element
+    $siteUrl = $element->site->getBaseUrl();
+
+    // Check if there is a matching hook in settings
+    foreach ($settings->revalidateHooks as $key=>$value) {
+      if ($key === $graphqlType) {
+        // Check for `tags` property
+        if (isset($value['tags'])) {
+          // If is array, add to tags
+          if (is_array($value['tags'])) {
+            $tags = array_merge($tags, $value['tags']);
+          } else {
+            $tags[] = $value['tags'];
+          }
+        }
+
+        // Check for `paths` property
+        if (isset($value['paths'])) {
+          // If is array, add to paths
+          if (is_array($value['paths'])) {
+            $paths = array_merge($paths, $value['paths']);
+          } else {
+            $paths[] = $value['paths'];
+          }
+        }
+      }
+    }
+
+    // Revalidate paths and tags if they exist
+    if (count($paths) > 0 || count($tags) > 0) {
+      $this->revalidate($siteUrl, [ 'paths' => $paths, 'tags' => $tags ]);
+    }
+  }
+
+  public function revalidateAll() {
+    // TODO - Rebuild app - Vercel?
+    $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [ 'paths' => ['/[[...uri]]'], 'tags' => ['site-data']]);
+  }
+
+  public function revalidate($siteUrl = '', $query = [ 'paths' => [], 'tags' => [] ]) {
+    try {
+      $settings = $this->getSettings();
+      $client = new Client();
+      $params = [
+        'query' => [ 
+          'secret' => $settings->revalidateToken,
+          'paths' => join(',', $query['paths']),
+          'tags' => join(',', $query['tags'])
+        ],
+      ];
+
+      // If `siteUrl` contains `localhost`, use `host.docker.internal` instead
+      if (strpos($siteUrl, 'localhost') !== false) {
+        $siteUrl = str_replace('localhost', 'host.docker.internal', $siteUrl);
+      }
+
+      $response = $client->request('GET', $siteUrl . 'api/revalidate', $params);
+
+      if ($response->getStatusCode() == 200) {
+        $body = $response->getBody()->getContents();
+
+        // Convert to JSON
+        $json = Json::decode($body);
+
+        // Check if there are any errors
+        if (isset($json['errors'])) {
+          throw new \Exception($json['errors'][0]['message']);
+        }
+
+        // Revalidate successful
+        Craft::$app->getSession()->setNotice('Revalidate successful');
+      } else {
+        throw new \Exception('Revalidate failed');
+      }
+    } catch (\Exception $e) {
+      Craft::$app->getSession()->setError($e->getMessage());
+    }
+  }
+
+  public function isUpdatedElement($element): bool
+  {
+      return
+          !$element->firstSave &&
+          !ElementHelper::isDraftOrRevision($element) &&
+          !$element->resaving;
+  }
+
+  private function getSettings() {
+    return Craft::$app->getPlugins()->getPlugin('revalidate')->getSettings();
+  }
+}
