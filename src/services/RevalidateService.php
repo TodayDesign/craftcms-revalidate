@@ -74,8 +74,40 @@ class RevalidateService extends Component
   }
 
   public function revalidateAll() {
-    // TODO - Rebuild app - Vercel?
     $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [ 'paths' => ['/[[...uri]]'], 'tags' => ['site-data']]);
+  }
+
+  public function revalidateRedirects() {
+    try {
+      // Rebuild app in Vercel
+      $client = new Client();
+      $settings = $this->getSettings();
+
+      if (!$settings->vercelDeployHookUrl) {
+        throw new \Exception('Vercel deploy hook URL not set');
+      }
+
+      $response = $client->request('GET', $settings->vercelDeployHookUrl);
+
+      if ($response->getStatusCode() == 201) {
+        $body = $response->getBody()->getContents();
+
+        // Convert to JSON
+        $json = Json::decode($body);
+
+        // Check if there are any errors
+        if (isset($json['errors'])) {
+          throw new \Exception($json['errors'][0]['message']);
+        }
+
+        // Revalidate successful
+        Craft::$app->getSession()->setNotice('New build started, should be live in a few minutes');
+      } else {
+        throw new \Exception('Revalidate failed');
+      }
+    } catch (\Exception $e) {
+      Craft::$app->getSession()->setError($e->getMessage());
+    }
   }
 
   public function revalidate($siteUrl = '', $query = [ 'paths' => [], 'tags' => [] ]) {

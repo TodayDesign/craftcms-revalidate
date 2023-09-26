@@ -18,4 +18,7 @@ class Settings extends Model
 
   /** @var array */
   public $revalidateHooks = [];
+
+  /** @var string */
+  public $vercelDeployHookUrl = '';
 }

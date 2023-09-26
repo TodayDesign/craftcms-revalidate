@@ -19,4 +19,13 @@ class RevalidateController extends Controller
 
         return $this->redirect(UrlHelper::url('utilities/'.RevalidateUtility::id()));
     }
+
+    public function actionRevalidateRedirects()
+    {
+        $this->requirePostRequest();
+
+        Craft::$app->getPlugins()->getPlugin('revalidate')->getService()->revalidateRedirects();
+
+        return $this->redirect(UrlHelper::url('utilities/'.RevalidateUtility::id()));
+    }
 }

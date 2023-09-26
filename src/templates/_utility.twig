@@ -1,7 +1,11 @@
 <div class="content">
   <form style="margin-bottom:4px;" method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
-    <input type="hidden" name="action" value="{{ 'revalidate/revalidate/revalidate-all' }}">
-    <input type="submit" class="btn submit" value="Revalidate all">
+    <select name="action">
+      <option value="revalidate/revalidate/revalidate-all" selected>Revalidate all data (excludes redirects)</option>
+      <option value="revalidate/revalidate/revalidate-sit-data">Revalidate site data</option>
+      <option value="revalidate/revalidate/revalidate-redirects">Revalidate redirects</option>
+    </select>
+    <input type="submit" class="btn submit" value="Submit">
 </form>
 </div>
