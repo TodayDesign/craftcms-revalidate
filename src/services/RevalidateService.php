@@ -37,6 +37,12 @@ class RevalidateService extends Component
     if (isset($element->uri)) {
       // $paths[] = $element->uri === '__home__' ? '/' : ('/' . $element->uri . '/');
       $tags[] = $element->uri;
+
+      // if uri includes a slash get the parent uri by removing the last segment
+      if (strpos($element->uri, '/') !== false) {
+        $parentUri = substr($element->uri, 0, strrpos($element->uri, '/'));
+        $tags[] = $parentUri;
+      }
     }
 
     // Get site URL from element
