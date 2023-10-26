@@ -14,13 +14,8 @@ use craft\helpers\Json;
 class RevalidateService extends Component
 {
   public function revalidateElement($element) {
-    // If first save, revalidate paths
-    // if ($element->firstSave) {
-    //   $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [ 'tags' => ['/[[...uri]]'], 'paths' => []]);
-    //   return;
-    // }
-
-    if (!$this->isUpdatedElement($element)) {
+    // If is draft or revision, don't revalidate
+    if (ElementHelper::isDraftOrRevision($element)) {
       return;
     }
 

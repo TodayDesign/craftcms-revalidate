@@ -60,14 +60,23 @@ class Revalidate extends Plugin
         // Register event handlers here ...
         // (see https://craftcms.com/docs/4.x/extend/events.html to get started)
         if ($this->getSettings()->sync) {
-            Event::on(
-                Elements::class,
-                Elements::EVENT_AFTER_SAVE_ELEMENT,
-                function (ElementEvent $event) {
-                    // Make sure element is 
-                    $this->getService()->revalidateElement($event->element);
-                }
-            );
+            $events = [
+                [Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT],
+                [Elements::class, Elements::EVENT_AFTER_RESTORE_ELEMENT],
+                [Elements::class, Elements::EVENT_AFTER_UPDATE_SLUG_AND_URI],
+                [Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT],
+            ];
+    
+            foreach ($events as $event) {
+                Event::on(
+                    $event[0],
+                    $event[1],
+                    function (ElementEvent $event) {
+                        // Make sure element is 
+                        $this->getService()->revalidateElement($event->element);
+                    }
+                );
+            }
 
             // Add Events for the URL Rules
             Event::on(
