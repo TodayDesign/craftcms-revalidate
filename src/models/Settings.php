@@ -21,4 +21,7 @@ class Settings extends Model
 
   /** @var string */
   public $vercelDeployHookUrl = '';
+
+  /** @var boolean */
+  public $prefetch = false;
 }

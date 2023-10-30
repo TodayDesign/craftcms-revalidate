@@ -30,13 +30,14 @@ class RevalidateService extends Component
 
     // If element has `uri` property, use that
     if (isset($element->uri)) {
-      // $paths[] = $element->uri === '__home__' ? '/' : ('/' . $element->uri . '/');
+      // $paths[] = $element->uri === '__home__' ? '/' : ('/' . $element->uri);
       $tags[] = $element->uri;
 
       // if uri includes a slash get the parent uri by removing the last segment
       if (strpos($element->uri, '/') !== false) {
         $parentUri = substr($element->uri, 0, strrpos($element->uri, '/'));
         $tags[] = $parentUri;
+        // $paths[] = $parentUri === '__home__' ? '/' : ('/' . $parentUri);
       }
     }
 
@@ -71,6 +72,11 @@ class RevalidateService extends Component
     // Revalidate paths and tags if they exist
     if (count($paths) > 0 || count($tags) > 0) {
       $this->revalidate($siteUrl, [ 'paths' => $paths, 'tags' => $tags ]);
+
+      // If element as URL, prefetch it
+      if (isset($element->url) && $settings->prefetch) {
+        $this->prefetchUrl($element->url);
+      }
     }
   }
 
@@ -161,5 +167,25 @@ class RevalidateService extends Component
 
   private function getSettings() {
     return Craft::$app->getPlugins()->getPlugin('revalidate')->getSettings();
+  }
+
+  public function prefetchUrl($url) {
+    try {
+      // If `siteUrl` contains `localhost`, use `host.docker.internal` instead
+      if (strpos($url, 'localhost') !== false) {
+        $url = str_replace('localhost', 'host.docker.internal', $url);
+      }
+
+      $client = new Client();
+      $response = $client->request('GET', $url);
+
+      if ($response->getStatusCode() == 200) {
+        // Revalidate successful
+      } else {
+        throw new \Exception('Prefetch failed');
+      }
+    } catch (\Exception $e) {
+      Craft::$app->getSession()->setError($e->getMessage());
+    }
   }
 }
