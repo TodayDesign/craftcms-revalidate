@@ -84,6 +84,10 @@ class RevalidateService extends Component
     $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [ 'paths' => ['/[[...uri]]'], 'tags' => ['site-data']]);
   }
 
+  public function revalidateSiteData() {
+    $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [ 'tags' => ['site-data']]);
+  }
+
   public function revalidateRedirects() {
     try {
       // Rebuild app in Vercel
