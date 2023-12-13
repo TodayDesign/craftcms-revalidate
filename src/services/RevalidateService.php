@@ -24,7 +24,7 @@ class RevalidateService extends Component
     $tags = [];
     $paths = [];
     $siteUrl = [];
-    
+
     // Get GraphQL type
     $graphqlType = $element->getGqlTypeName();
 
@@ -112,12 +112,12 @@ class RevalidateService extends Component
         }
 
         // Revalidate successful
-        Craft::$app->getSession()->setNotice('New build started, should be live in a few minutes');
+        $this->setSessionNotice('New build started, should be live in a few minutes');
       } else {
         throw new \Exception('Revalidate failed');
       }
     } catch (\Exception $e) {
-      Craft::$app->getSession()->setError($e->getMessage());
+      $this->setSessionError($e->getMessage());
     }
   }
 
@@ -126,7 +126,7 @@ class RevalidateService extends Component
       $settings = $this->getSettings();
       $client = new Client();
       $params = [
-        'form_params' => [ 
+        'form_params' => [
           'secret' => $settings->revalidateToken,
           'paths' => join(',', $query['paths']),
           'tags' => join(',', $query['tags'])
@@ -152,12 +152,12 @@ class RevalidateService extends Component
         }
 
         // Revalidate successful
-        Craft::$app->getSession()->setNotice('Revalidate successful');
+        $this->setSessionNotice('Revalidate successful');
       } else {
         throw new \Exception('Revalidate failed');
       }
     } catch (\Exception $e) {
-      Craft::$app->getSession()->setError($e->getMessage());
+      $this->setSessionError($e->getMessage());
     }
   }
 
@@ -171,6 +171,18 @@ class RevalidateService extends Component
 
   private function getSettings() {
     return Craft::$app->getPlugins()->getPlugin('revalidate')->getSettings();
+  }
+
+  private function setSessionNotice($message) {
+    if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+      Craft::$app->getSession()->setNotice($message);
+    }
+  }
+
+  private function setSessionError($message) {
+    if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+      Craft::$app->getSession()->setError($message);
+    }
   }
 
   public function prefetchUrl($url) {
@@ -189,7 +201,7 @@ class RevalidateService extends Component
         throw new \Exception('Prefetch failed');
       }
     } catch (\Exception $e) {
-      Craft::$app->getSession()->setError($e->getMessage());
+      $this->setSessionError($e->getMessage());
     }
   }
 }
