@@ -73,6 +73,9 @@ class RevalidateService extends Component
     if (count($paths) > 0 || count($tags) > 0) {
       $this->revalidate($siteUrl, [ 'paths' => $paths, 'tags' => $tags ]);
 
+      // Run again to fix issue with Vercel
+      $this->revalidate($siteUrl, [ 'paths' => $paths, 'tags' => $tags ]);
+
       // If element as URL, prefetch it
       if (isset($element->url) && $settings->prefetch) {
         $this->prefetchUrl($element->url);
