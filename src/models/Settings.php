@@ -24,4 +24,7 @@ class Settings extends Model
 
   /** @var boolean */
   public $prefetch = false;
+
+  /** @var string */
+  public $httpMethod = 'POST';
 }

@@ -127,8 +127,10 @@ class RevalidateService extends Component
     try {
       $settings = $this->getSettings();
       $client = new Client();
+      $key = $settings->httpMethod === 'GET' ? 'query' : 'form_params';
+
       $params = [
-        'form_params' => [
+        $key => [
           'secret' => $settings->revalidateToken,
           'paths' => join(',', $query['paths']),
           'tags' => join(',', $query['tags'])
@@ -140,7 +142,7 @@ class RevalidateService extends Component
         $siteUrl = str_replace('localhost', 'host.docker.internal', $siteUrl);
       }
 
-      $response = $client->request('POST', $siteUrl . 'api/revalidate', $params);
+      $response = $client->request($settings->httpMethod, $siteUrl . 'api/revalidate', $params);
 
       if ($response->getStatusCode() == 200) {
         $body = $response->getBody()->getContents();
