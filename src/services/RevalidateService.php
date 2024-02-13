@@ -87,7 +87,7 @@ class RevalidateService extends Component
   }
 
   public function revalidateSiteData() {
-    $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [ 'tags' => ['site-data']]);
+    $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [  'paths' => [], 'tags' => ['site-data']]);
   }
 
   public function deploy() {
