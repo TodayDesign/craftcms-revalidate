@@ -2,9 +2,9 @@
   <form style="margin-bottom:4px;" method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
     <select name="action">
-      <option value="revalidate/revalidate/deploy" selected>Deploy site</option>
-      <option value="revalidate/revalidate/revalidate-all">Revalidate all data (excludes redirects)</option>
-      <option value="revalidate/revalidate/revalidate-site-data">Revalidate site data</option>
+      <option value="revalidate/revalidate/deploy" selected>Deploy site and rebuild redirects</option>
+      <option value="revalidate/revalidate/revalidate-all">Clear page cache</option>
+      <option value="revalidate/revalidate/revalidate-site-data">Clear global and navigation cache</option>
     </select>
     <input type="submit" class="btn submit" value="Submit">
 </form>
