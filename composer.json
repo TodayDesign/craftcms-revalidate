@@ -3,10 +3,9 @@
     "description": "A CraftCMS plugin to revalidate tags and paths on Next.js websites.",
     "type": "craft-plugin",
     "require": {
-        "php": ">=8.0.2",
-        "craftcms/cms": "*",
-        "guzzlehttp/guzzle": "^7.0.1",
-        "verbb/navigation": "*"
+        "php": ">=8.2.9",
+        "craftcms/cms": "^5.0.0-beta.1",
+        "guzzlehttp/guzzle": "^7.0.1"
     },
     "autoload": {
         "psr-4": {
@@ -23,7 +22,7 @@
     "config": {
         "sort-packages": true,
         "platform": {
-            "php": "8.0.2"
+            "php": "8.2.9"
         },
         "allow-plugins": {
             "yiisoft/yii2-composer": true,
