@@ -80,7 +80,7 @@ class RevalidateService extends Component
           $url = $siteUrl . $path;
 
           // Remove any double slashes
-          $url = preg_replace('#/+#','/', $url);
+          $url = preg_replace('#([^:])//+#', '$1/', $url);
 
           $task = new PrefetchTask($url);
 
