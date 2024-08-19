@@ -45,6 +45,10 @@ class RevalidateService extends Component
     // Get site URL from element
     $siteUrl = $element->site->getBaseUrl();
 
+    if (!$siteUrl) {
+      $siteUrl = Craft::$app->sites->currentSite->getBaseUrl();
+    }
+
     // Check if there is a matching hook in settings
     foreach ($settings->revalidateHooks as $key=>$value) {
       if ($key === $graphqlType) {
