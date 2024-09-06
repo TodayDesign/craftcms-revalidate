@@ -10,6 +10,7 @@ use craft\helpers\ElementHelper;
 use craft\elements\Entry;
 use GuzzleHttp\Client;
 use craft\helpers\Json;
+use today\revalidate\jobs\PrefetchTask;
 
 class RevalidateService extends Component
 {
@@ -44,6 +45,10 @@ class RevalidateService extends Component
     // Get site URL from element
     $siteUrl = $element->site->getBaseUrl();
 
+    if (!$siteUrl) {
+      $siteUrl = Craft::$app->sites->currentSite->getBaseUrl();
+    }
+
     // Check if there is a matching hook in settings
     foreach ($settings->revalidateHooks as $key=>$value) {
       if ($key === $graphqlType) {
@@ -76,7 +81,15 @@ class RevalidateService extends Component
       if ($settings->prefetch) {
         // Prefetch URLs
         foreach ($paths as $path) {
-          $this->prefetchUrl($siteUrl . $path);
+          $url = $siteUrl . $path;
+
+          // Remove any double slashes
+          $url = preg_replace('#([^:])//+#', '$1/', $url);
+
+          $task = new PrefetchTask($url);
+
+          Craft::$app->queue->ttr(3600);
+          Craft::$app->queue->push($task);
         }
       }
     }
@@ -190,22 +203,20 @@ class RevalidateService extends Component
   }
 
   public function prefetchUrl($url) {
-    try {
-      // If `siteUrl` contains `localhost`, use `host.docker.internal` instead
-      if (strpos($url, 'localhost') !== false) {
-        $url = str_replace('localhost', 'host.docker.internal', $url);
-      }
+    // If `siteUrl` contains `localhost`, use `host.docker.internal` instead
+    if (strpos($url, 'localhost') !== false) {
+      $url = str_replace('localhost', 'host.docker.internal', $url);
+    }
 
-      $client = new Client();
-      $response = $client->request('GET', $url);
+    $client = new Client();
+    $response = $client->request('GET', $url);
 
-      if ($response->getStatusCode() == 200) {
-        // Revalidate successful
-      } else {
-        throw new \Exception('Prefetch failed');
-      }
-    } catch (\Exception $e) {
-      $this->setSessionError($e->getMessage());
+    if ($response->getStatusCode() == 200) {
+      // Log success
+      Craft::info('Prefetch successful', 'revalidate');
+    } else {
+      // Log error
+      Craft::error('Prefetch failed', 'revalidate');
     }
   }
 }
