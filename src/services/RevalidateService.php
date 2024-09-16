@@ -52,6 +52,31 @@ class RevalidateService extends Component
     // Check if there is a matching hook in settings
     foreach ($settings->revalidateHooks as $key=>$value) {
       if ($key === $graphqlType) {
+        // Check to see if there is a property that matches the section handle
+        if (isset($value[$element->section->handle])) {
+          $sectionConfig = $value[$element->section->handle];
+
+           // Check for `tags` property
+          if (isset($sectionConfig['tags'])) {
+            // If is array, add to tags
+            if (is_array($sectionConfig['tags'])) {
+              $tags = array_merge($tags, $sectionConfig['tags']);
+            } else {
+              $tags[] = $sectionConfig['tags'];
+            }
+          }
+
+          // Check for `paths` property
+          if (isset($sectionConfig['paths'])) {
+            // If is array, add to paths
+            if (is_array($sectionConfig['paths'])) {
+              $paths = array_merge($paths, $sectionConfig['paths']);
+            } else {
+              $paths[] = $sectionConfig['paths'];
+            }
+          }
+        }
+
         // Check for `tags` property
         if (isset($value['tags'])) {
           // If is array, add to tags
@@ -79,7 +104,9 @@ class RevalidateService extends Component
       $this->revalidate($siteUrl, [ 'paths' => $paths, 'tags' => $tags ]);
 
       if ($settings->prefetch) {
-        // Prefetch URLs
+        // Deduplicate paths
+        $paths = array_unique($paths);
+
         foreach ($paths as $path) {
           $url = $siteUrl . $path;
 
@@ -89,6 +116,7 @@ class RevalidateService extends Component
           $task = new PrefetchTask($url);
 
           Craft::$app->queue->ttr(3600);
+          Craft::$app->queue->priority(1024);
           Craft::$app->queue->push($task);
         }
       }
