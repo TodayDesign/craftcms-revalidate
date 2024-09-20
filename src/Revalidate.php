@@ -18,6 +18,7 @@ use craft\events\ModelEvent;
 use verbb\navigation\elements\Node;
 use craft\events\RegisterUrlRulesEvent;
 use craft\web\UrlManager;
+use craft\web\Request;
 
 /**
  * Revalidate plugin
@@ -47,6 +48,7 @@ class Revalidate extends Plugin
         Craft::$app->onInit(function() {
             $this->attachEventHandlers();
             $this->registerUtility();
+            $this->registerVercelWebhook();
         });
     }
 
@@ -66,13 +68,13 @@ class Revalidate extends Plugin
                 [Elements::class, Elements::EVENT_AFTER_UPDATE_SLUG_AND_URI],
                 [Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT],
             ];
-    
+
             foreach ($events as $event) {
                 Event::on(
                     $event[0],
                     $event[1],
                     function (ElementEvent $event) {
-                        // Make sure element is 
+                        // Make sure element is
                         $this->getService()->revalidateElement($event->element);
                     }
                 );
@@ -98,6 +100,28 @@ class Revalidate extends Plugin
             Utilities::EVENT_REGISTER_UTILITY_TYPES,
             function (RegisterComponentTypesEvent $event) {
                 $event->types[] = RevalidateUtility::class;
+            }
+        );
+    }
+
+    private function registerVercelWebhook(): void
+    {
+        Event::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_SITE_URL_RULES,
+            function (RegisterUrlRulesEvent $event) {
+                $event->rules['revalidate/webhook/vercel'] = 'revalidate/webhook/vercel';
+            }
+        );
+
+        Event::on(
+            Request::class,
+            Request::EVENT_BEFORE_ACTION,
+            function (Event $event) {
+                $request = Craft::$app->getRequest();
+                if ($request->getIsPost() && $request->getUrl() === 'revalidate/webhook/vercel') {
+                    $request->enableCsrfValidation = false;
+                }
             }
         );
     }

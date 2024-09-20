@@ -1,3 +1,5 @@
+{% set status = craft.revalidate.revalidate.getLatestDeploymentStatus() %}
+
 <div class="content">
   <form style="margin-bottom:4px;" method="post" accept-charset="UTF-8">
     {{ csrfInput() }}
@@ -7,5 +9,12 @@
       <option value="revalidate/revalidate/revalidate-site-data">Clear global and navigation cache</option>
     </select>
     <input type="submit" class="btn submit" value="Submit">
-</form>
+  </form>
+  {% if status %}
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="status-indicator" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: {{ status.color }};"></span>
+      <span>{{ status.label }}</span>
+      <span style="color: #777;">{{ status.createdAt|date('Y-m-d H:i:s') }}</span>
+    </div>
+  {% endif %}
 </div>

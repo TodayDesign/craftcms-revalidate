@@ -215,4 +215,15 @@ class RevalidateService extends Component
       Craft::error('Prefetch failed', 'revalidate');
     }
   }
+
+    public function getLatestDeploymentStatus() {
+        $result = Craft::$app->db->createCommand('SELECT * FROM {{%revalidate_deployment_status}} ORDER BY createdAt DESC LIMIT 1')
+            ->queryOne();
+
+        if ($result) {
+            return new DeploymentStatus($result);
+        }
+
+        return null;
+    }
 }
