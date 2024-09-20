@@ -21,23 +21,22 @@ class WebhookController extends Controller
         $data = json_decode($request->getRawBody(), true);
         $secretToken = $request->headers->get('X-Vercel-Signature');
 
-        if ($secretToken !== $settings->vercelWebhookSecret) {
+        if ($secretToken !== $settings->vercelWebhookToken) {
             throw new UnauthorizedHttpException('Invalid token');
         }
 
-        $status = new DeploymentStatus();
-        $status->type = $data['type'];
-        $status->createdAt = $data['createdAt'];
+        $target = $data['target'] ?? null;
 
-        // Process the webhook data
-        // You can access the data like $data['deployment']['state']
+        if ($target === 'production') {
+            $status = new DeploymentStatus();
+            $status->type = $data['type'];
+            $status->createdAt = $data['createdAt'];
 
-        // Log the event or update your database as needed
-
-        if ($status->validate()) {
-            Craft::$app->db->createCommand()
-                ->insert('{{%revalidate_deployment_status}}', $status->toArray(['type', 'createdAt']))
-                ->execute();
+            if ($status->validate()) {
+                Craft::$app->db->createCommand()
+                    ->insert('{{%revalidate_deployment_status}}', $status->toArray(['type', 'createdAt']))
+                    ->execute();
+            }
         }
 
         return $this->asJson(['success' => true]);
