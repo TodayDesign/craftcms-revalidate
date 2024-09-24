@@ -14,11 +14,12 @@ use today\revalidate\models\Settings;
 use today\revalidate\services\RevalidateService;
 use today\revalidate\utilities\RevalidateUtility;
 use yii\base\Event;
+use yii\base\ActionEvent
 use craft\events\ModelEvent;
 use verbb\navigation\elements\Node;
 use craft\events\RegisterUrlRulesEvent;
 use craft\web\UrlManager;
-use craft\web\Request;
+use craft\web\Controller;
 
 /**
  * Revalidate plugin
@@ -115,9 +116,9 @@ class Revalidate extends Plugin
         );
 
         Event::on(
-            Request::class,
-            Request::EVENT_BEFORE_ACTION,
-            function (Event $event) {
+            Controller::class,
+            Controller::EVENT_BEFORE_ACTION,
+            function (ActionEvent $event) {
                 $request = Craft::$app->getRequest();
                 if ($request->getIsPost() && $request->getUrl() === 'revalidate/webhook/vercel') {
                     $request->enableCsrfValidation = false;
