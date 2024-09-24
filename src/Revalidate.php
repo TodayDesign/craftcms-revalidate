@@ -110,11 +110,10 @@ class Revalidate extends Plugin
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
-              function (RegisterUrlRulesEvent $event) {
-                  $event->rules = array_merge($event->rules, [
-                      'POST api/vercel-webhook' => 'revalidate/webhook/vercel',
-                  ]);
-              }
+            function (RegisterUrlRulesEvent $event) {
+                $event->rules = array_merge($event->rules, [
+                    'POST api/vercel-webhook' => 'revalidate/webhook/vercel',
+                ]);
             }
         );
 
