@@ -110,8 +110,11 @@ class Revalidate extends Plugin
         Event::on(
             UrlManager::class,
             UrlManager::EVENT_REGISTER_SITE_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
-                $event->rules['revalidate/webhook/vercel'] = 'revalidate/webhook/vercel';
+              function (RegisterUrlRulesEvent $event) {
+                  $event->rules = array_merge($event->rules, [
+                      'POST api/vercel-webhook' => 'revalidate/webhook/vercel',
+                  ]);
+              }
             }
         );
 
@@ -120,7 +123,7 @@ class Revalidate extends Plugin
             Controller::EVENT_BEFORE_ACTION,
             function (ActionEvent $event) {
                 $request = Craft::$app->getRequest();
-                if ($request->getIsPost() && $request->getUrl() === 'revalidate/webhook/vercel') {
+                if ($request->getIsPost() && $request->getUrl() === 'api/vercel-webhook') {
                     $request->enableCsrfValidation = false;
                 }
             }
