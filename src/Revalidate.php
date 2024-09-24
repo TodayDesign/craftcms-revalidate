@@ -14,7 +14,7 @@ use today\revalidate\models\Settings;
 use today\revalidate\services\RevalidateService;
 use today\revalidate\utilities\RevalidateUtility;
 use yii\base\Event;
-use yii\base\ActionEvent
+use yii\base\ActionEvent;
 use craft\events\ModelEvent;
 use verbb\navigation\elements\Node;
 use craft\events\RegisterUrlRulesEvent;
