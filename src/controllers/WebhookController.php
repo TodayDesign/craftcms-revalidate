@@ -11,7 +11,7 @@ class WebhookController extends Controller
 {
     protected array|int|bool $allowAnonymous = true;
 
-    public function actionVercelEvent(): Response
+    public function actionVercel(): Response
     {
         $this->requirePostRequest();
 
