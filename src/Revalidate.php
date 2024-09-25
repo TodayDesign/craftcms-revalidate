@@ -12,6 +12,7 @@ use craft\services\Elements;
 use craft\services\Utilities;
 use today\revalidate\models\Settings;
 use today\revalidate\services\RevalidateService;
+use today\revalidate\variables\RevalidateVariable;
 use today\revalidate\utilities\RevalidateUtility;
 use yii\base\Event;
 use yii\base\ActionEvent;
@@ -51,6 +52,8 @@ class Revalidate extends Plugin
             $this->registerUtility();
             $this->registerVercelWebhook();
         });
+
+        Craft::$app->view->registerTwigExtension(new RevalidateVariable());
     }
 
     protected function createSettingsModel(): ?Model
