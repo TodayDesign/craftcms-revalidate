@@ -1,5 +1,5 @@
 <?php
-namespace today\revalidate;
+namespace today\revalidate\variables;
 
 use today\revalidate\Revalidate;
 
