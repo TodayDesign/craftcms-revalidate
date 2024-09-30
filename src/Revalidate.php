@@ -41,6 +41,13 @@ class Revalidate extends Plugin
         ];
     }
 
+    protected function defineComponents(): array
+    {
+        return [
+            'revalidateVars' => RevalidateVariable::class,
+        ];
+    }
+
     public function init()
     {
         parent::init();
@@ -52,8 +59,6 @@ class Revalidate extends Plugin
             $this->registerUtility();
             $this->registerVercelWebhook();
         });
-
-        Craft::$app->view->registerTwigExtension(new RevalidateVariable());
     }
 
     protected function createSettingsModel(): ?Model
