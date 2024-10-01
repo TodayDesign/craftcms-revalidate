@@ -21,6 +21,7 @@ use verbb\navigation\elements\Node;
 use craft\events\RegisterUrlRulesEvent;
 use craft\web\UrlManager;
 use craft\web\Controller;
+use craft\web\twig\variables\CraftVariable;
 
 /**
  * Revalidate plugin
@@ -38,13 +39,6 @@ class Revalidate extends Plugin
             'components' => [
                 'revalidate' => RevalidateService::class,
             ],
-        ];
-    }
-
-    protected function defineComponents(): array
-    {
-        return [
-            'revalidateVars' => RevalidateVariable::class,
         ];
     }
 
@@ -133,6 +127,15 @@ class Revalidate extends Plugin
                 if ($request->getIsPost() && $request->getUrl() === 'api/vercel-webhook') {
                     $request->enableCsrfValidation = false;
                 }
+            }
+        );
+
+        Event::on(
+            CraftVariable::class,
+            CraftVariable::EVENT_INIT,
+            function (Event $e) {
+                $variable = $e->sender;
+                $variable->set('revalidate', RevalidateVariable::class);
             }
         );
     }
