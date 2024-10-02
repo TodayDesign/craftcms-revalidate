@@ -8,6 +8,7 @@ use revalidate\Revalidate;
 use craft\events\ElementEvent;
 use craft\helpers\ElementHelper;
 use craft\elements\Entry;
+use craft\db\Query;
 use GuzzleHttp\Client;
 use craft\helpers\Json;
 use today\revalidate\jobs\PrefetchTask;
