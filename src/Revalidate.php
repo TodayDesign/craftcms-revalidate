@@ -120,17 +120,6 @@ class Revalidate extends Plugin
         );
 
         Event::on(
-            Controller::class,
-            Controller::EVENT_BEFORE_ACTION,
-            function (ActionEvent $event) {
-                $request = Craft::$app->getRequest();
-                if ($request->getIsPost() && $request->getUrl() === 'api/vercel-webhook') {
-                    $request->enableCsrfValidation = false;
-                }
-            }
-        );
-
-        Event::on(
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
             function (Event $e) {

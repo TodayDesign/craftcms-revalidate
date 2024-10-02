@@ -11,6 +11,15 @@ class WebhookController extends Controller
 {
     protected array|int|bool $allowAnonymous = true;
 
+    public function beforeAction($action): bool
+    {
+        if ($action->id === 'vercel') {
+            $this->enableCsrfValidation = false;
+        }
+
+        return parent::beforeAction($action);
+    }
+
     public function actionVercel(): Response
     {
         $this->requirePostRequest();
