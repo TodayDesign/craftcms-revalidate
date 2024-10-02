@@ -31,7 +31,7 @@ use craft\web\twig\variables\CraftVariable;
  */
 class Revalidate extends Plugin
 {
-    public string $schemaVersion = '1.0.0';
+    public string $schemaVersion = '1.0.1';
 
     public static function config(): array
     {
