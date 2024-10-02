@@ -217,8 +217,11 @@ class RevalidateService extends Component
   }
 
     public function getLatestDeploymentStatus() {
-        $result = Craft::$app->db->createCommand('SELECT * FROM {{%revalidate_deployment_status}} ORDER BY createdAt DESC LIMIT 1')
-            ->queryOne();
+        $result = (new Query())
+          ->select(['*'])
+          ->from('{{%revalidate_deployment_status}}')
+          ->orderBy(['createdAt' => SORT_DESC])
+          ->one();
 
         if ($result) {
             return new DeploymentStatus($result);
