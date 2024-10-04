@@ -40,14 +40,14 @@ class DeploymentStatus extends Model
     {
         switch ($this->type) {
             case 'succeeded':
-                return 'green';
+                return 'var(--enabled-color)';
             case 'created':
-                return 'yellow';
+                return 'var(--pending-color)';
             case 'error':
             case 'canceled':
-                return 'red';
+                return 'var(--disabled-color)';
             default:
-                return 'gray';
+                return 'var(--grey-500)';
         }
     }
 }

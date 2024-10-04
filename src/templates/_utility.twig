@@ -11,10 +11,10 @@
     <input type="submit" class="btn submit" value="Submit">
   </form>
   {% if status %}
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <span class="status-indicator" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: {{ status.color }};"></span>
+    <div style="display: flex; align-items: center; gap: 12px; margin-top: var(--l); padding: var(--m); border-radius: 4px; background-color: var(--gray-050); box-shadow: 0 0 0 1px #cdd8e4;">
+      <span class="status-indicator" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 1px #cdd8e4; background-color: {{ status.color }};"></span>
       <span>{{ status.label }}</span>
-      <span style="color: #777;">{{ status.createdAt|date('Y-m-d H:i:s') }}</span>
+      <span style="color: var(--light-text-color);">{{ status.createdAt|date('Y-m-d H:i:s') }}</span>
     </div>
   {% endif %}
 </div>
