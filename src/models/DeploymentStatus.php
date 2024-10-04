@@ -8,12 +8,16 @@ class DeploymentStatus extends Model
     public $id;
     public $type;
     public $createdAt;
+    public $dateCreated;
+    public $dateUpdated;
+    public $uid;
 
     public function rules(): array
     {
         return [
             [['type', 'createdAt'], 'required'],
             ['type', 'in', 'range' => ['succeeded', 'created', 'error', 'canceled']],
+            [['dateCreated', 'dateUpdated'], 'datetime', 'format' => 'php:Y-m-d H:i:s'],
         ];
     }
 
