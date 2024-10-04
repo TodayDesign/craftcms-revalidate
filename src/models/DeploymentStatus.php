@@ -9,7 +9,7 @@ class DeploymentStatus extends Model
     public $type;
     public $createdAt;
 
-    public function rules()
+    public function rules(): array
     {
         return [
             [['type', 'createdAt'], 'required'],
