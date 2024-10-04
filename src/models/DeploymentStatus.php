@@ -42,7 +42,7 @@ class DeploymentStatus extends Model
             case 'succeeded':
                 return 'var(--enabled-color)';
             case 'created':
-                return 'var(--pending-color)';
+                return '#F3BA48';
             case 'error':
             case 'canceled':
                 return 'var(--disabled-color)';
