@@ -12,6 +12,7 @@ use craft\db\Query;
 use GuzzleHttp\Client;
 use craft\helpers\Json;
 use today\revalidate\jobs\PrefetchTask;
+use today\revalidate\models\DeploymentStatus;
 
 class RevalidateService extends Component
 {
