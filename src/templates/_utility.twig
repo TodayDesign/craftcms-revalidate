@@ -15,7 +15,7 @@
       <span class="status-indicator" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: {{ status.color }};"></span>
       <span>{{ status.label }}</span>
       <span style="flex: auto;"></span>
-      <span style="color: var(--light-text-color);">{{ status.createdAt|date('Y-m-d H:i:s') }}</span>
+      <span style="color: var(--light-text-color);">{{ status.createdAt|date }}, {{ status.createdAt|time('short') }}</span>
     </div>
   {% endif %}
 </div>
