@@ -16,7 +16,7 @@ class DeploymentStatus extends Model
     {
         return [
             [['type', 'createdAt'], 'required'],
-            ['type', 'in', 'range' => ['succeeded', 'created', 'error', 'canceled']],
+            ['type', 'in', 'range' => ['deployment.succeeded', 'deployment.created', 'deployment.error', 'deployment.canceled']],
             [['dateCreated', 'dateUpdated'], 'datetime', 'format' => 'php:Y-m-d H:i:s'],
         ];
     }
@@ -24,12 +24,12 @@ class DeploymentStatus extends Model
     public function getLabel()
     {
         switch ($this->type) {
-            case 'succeeded':
+            case 'deployment.succeeded':
                 return 'Success';
-            case 'created':
+            case 'deployment.created':
                 return 'Deploying';
-            case 'error':
-            case 'canceled':
+            case 'deployment.error':
+            case 'deployment.canceled':
                 return 'Failed';
             default:
                 return 'Unknown';
@@ -39,12 +39,12 @@ class DeploymentStatus extends Model
     public function getColor()
     {
         switch ($this->type) {
-            case 'succeeded':
+            case 'deployment.succeeded':
                 return 'var(--enabled-color)';
-            case 'created':
+            case 'deployment.created':
                 return '#F3BA48';
-            case 'error':
-            case 'canceled':
+            case 'deployment.error':
+            case 'deployment.canceled':
                 return 'var(--disabled-color)';
             default:
                 return 'var(--grey-500)';
