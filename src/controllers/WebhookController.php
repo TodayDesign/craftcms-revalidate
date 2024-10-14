@@ -34,18 +34,14 @@ class WebhookController extends Controller
             throw new UnauthorizedHttpException('Invalid token');
         }
 
-        $target = $data['payload']['target'] ?? null;
+        $status = new DeploymentStatus();
+        $status->type = $data['type'];
+        $status->createdAt = $data['createdAt'];
 
-        if ($target === 'production') {
-            $status = new DeploymentStatus();
-            $status->type = $data['type'];
-            $status->createdAt = $data['createdAt'];
-
-            if ($status->validate()) {
-                Craft::$app->db->createCommand()
-                    ->insert('{{%revalidate_deployment_status}}', $status->toArray(['type', 'createdAt']))
-                    ->execute();
-            }
+        if ($status->validate()) {
+            Craft::$app->db->createCommand()
+                ->insert('{{%revalidate_deployment_status}}', $status->toArray(['type', 'createdAt']))
+                ->execute();
         }
 
         return $this->asJson(['success' => true]);
