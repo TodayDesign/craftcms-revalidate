@@ -34,7 +34,7 @@ class WebhookController extends Controller
             throw new UnauthorizedHttpException('Invalid token');
         }
 
-        $target = $data['target'] ?? null;
+        $target = $data['payload']['target'] ?? null;
 
         if ($target === 'production') {
             $status = new DeploymentStatus();
