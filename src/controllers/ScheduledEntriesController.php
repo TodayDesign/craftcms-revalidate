@@ -111,6 +111,9 @@ class ScheduledEntriesController extends Controller
         // Resave the entries
         foreach ($entries as $entry) {
             Craft::$app->getElements()->saveElement($entry);
+
+            // Run the queue so that the entries are indexed for Algolia if Scout is installed
+            Craft::$app->queue->run();
         }
 
         return $this->sendResponse(200, null, $entries);
