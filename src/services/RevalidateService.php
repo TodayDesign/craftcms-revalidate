@@ -99,6 +99,15 @@ class RevalidateService extends Component
       }
     }
 
+    // Replace any variables in paths, e.g. {slug} => $element->slug
+    foreach ($paths as $key => $path) {
+      $path = preg_replace_callback('/\{([^\}]+)\}/', function($matches) use ($element) {
+        return $element->{$matches[1]};
+      }, $path);
+
+      $paths[$key] = $path;
+    }
+
     // Revalidate paths and tags if they exist
     if (count($paths) > 0 || count($tags) > 0) {
       $this->revalidate($siteUrl, [ 'paths' => $paths, 'tags' => $tags ]);
