@@ -99,22 +99,17 @@ class RevalidateService extends Component
       }
     }
 
-    // Replace any variables in paths, e.g. {slug} => $element->slug
-    foreach ($paths as $key => $path) {
-      $path = preg_replace_callback('/\{([^\}]+)\}/', function($matches) use ($element) {
-        return $element->{$matches[1]};
-      }, $path);
-
-      $paths[$key] = $path;
+    // Replace any functions, if they exist and pass through the element
+    foreach ($tags as $key => $tag) {
+      if (is_callable($tag)) {
+        $tags[$key] = $tag($element);
+      }
     }
 
-    // Replace any variables in tags, e.g. {slug} => $element->slug
-    foreach ($tags as $key => $tag) {
-      $tag = preg_replace_callback('/\{([^\}]+)\}/', function($matches) use ($element) {
-        return $element->{$matches[1]};
-      }, $tag);
-
-      $tags[$key] = $tag;
+    foreach ($paths as $key => $path) {
+      if (is_callable($path)) {
+        $paths[$key] = $path($element);
+      }
     }
 
     // Revalidate paths and tags if they exist

@@ -108,6 +108,15 @@ class ScheduledEntriesController extends Controller
             ->status([Entry::STATUS_LIVE, Entry::STATUS_EXPIRED])
             ->all();
 
+        // Get expired entries with `expiryDate` that is within 5 minutes of the current time
+        $expiredEntries = Entry::find()
+            ->expiryDate(['and', '>=' . date('Y-m-d H:i:s', strtotime('-5 minutes')), '<=' . date('Y-m-d H:i:s')])
+            ->status([Entry::STATUS_LIVE, Entry::STATUS_EXPIRED])
+            ->all();
+
+        // Merge the entries
+        $entries = array_merge($entries, $expiredEntries);
+
         // Resave the entries
         foreach ($entries as $entry) {
             Craft::$app->getElements()->saveElement($entry);
