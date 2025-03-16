@@ -42,6 +42,8 @@ class WebhookController extends Controller
             Craft::$app->db->createCommand()
                 ->insert('{{%revalidate_deployment_status}}', $status->toArray(['type', 'createdAt']))
                 ->execute();
+        } else {
+            Craft::error('Validation failed: ' . json_encode($status->getErrors()), 'revalidate');
         }
 
         return $this->asJson(['success' => true]);
