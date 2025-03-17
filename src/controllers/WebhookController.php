@@ -20,6 +20,12 @@ class WebhookController extends Controller
         return parent::beforeAction($action);
     }
 
+    private function setSessionNotice($message) {
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+          Craft::$app->getSession()->setNotice($message);
+        }
+      }
+
     public function actionVercel(): Response
     {
         $this->requirePostRequest();
@@ -38,12 +44,12 @@ class WebhookController extends Controller
         $status->type = $data['type'];
         $status->createdAt = $data['createdAt'];
 
+        $this->setSessionNotice('Data response: ' . json_encode($data));
+
         if ($status->validate()) {
             Craft::$app->db->createCommand()
                 ->insert('{{%revalidate_deployment_status}}', $status->toArray(['type', 'createdAt']))
                 ->execute();
-        } else {
-            Craft::error('Validation failed: ' . json_encode($status->getErrors()), 'revalidate');
         }
 
         return $this->asJson(['success' => true]);
