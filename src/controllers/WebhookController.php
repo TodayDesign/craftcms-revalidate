@@ -30,6 +30,10 @@ class WebhookController extends Controller
         $request = Craft::$app->getRequest();
         $data = json_decode($request->getRawBody(), true);
         $secretToken = $request->headers->get('X-Vercel-Signature');
+        
+        // Log the received secret token and the expected token
+        Craft::info('Received secret token: ' . $secretToken, 'revalidate');
+        Craft::info('Expected secret token: ' . $settings->vercelWebhookToken, 'revalidate');
 
         if ($secretToken !== $settings->vercelWebhookToken) {
             throw new UnauthorizedHttpException('Invalid token');
