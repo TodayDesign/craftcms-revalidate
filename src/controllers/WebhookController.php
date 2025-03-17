@@ -13,10 +13,14 @@ class WebhookController extends Controller
 
     public function beforeAction($action): bool
     {
-        if ($action->id === 'vercel') {
-            $this->enableCsrfValidation = false;
-        }
 
+        Craft::info('Action ID: ' . $action->id, 'revalidate');
+
+        // if ($action->id === 'vercel') {
+        //     $this->enableCsrfValidation = false;
+        // }
+        $this->enableCsrfValidation = false;
+        
         return parent::beforeAction($action);
     }
 
@@ -30,7 +34,7 @@ class WebhookController extends Controller
         $request = Craft::$app->getRequest();
         $data = json_decode($request->getRawBody(), true);
         $secretToken = $request->headers->get('X-Vercel-Signature');
-        
+
         // Log the received secret token and the expected token
         Craft::info('Received secret token: ' . $secretToken, 'revalidate');
         Craft::info('Expected secret token: ' . $settings->vercelWebhookToken, 'revalidate');
