@@ -20,11 +20,6 @@ class WebhookController extends Controller
         return parent::beforeAction($action);
     }
 
-    private function setSessionNotice($message) {
-        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
-          Craft::$app->getSession()->setNotice($message);
-        }
-      }
 
     public function actionVercel(): Response
     {
@@ -44,7 +39,8 @@ class WebhookController extends Controller
         $status->type = $data['type'];
         $status->createdAt = $data['createdAt'];
 
-        $this->setSessionNotice('Data response: ' . json_encode($data));
+        // Log the data response
+        Craft::info('Data response: ' . json_encode($data), 'revalidate');
 
         if ($status->validate()) {
             Craft::$app->db->createCommand()
