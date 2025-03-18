@@ -32,15 +32,15 @@ class WebhookController extends Controller
         $request = Craft::$app->getRequest();
         $rawBody = $request->getRawBody();
         $data = json_decode($rawBody, true);
-        // $receivedSignature = $request->headers->get('x-vercel-signature');
+        $receivedSignature = $request->headers->get('x-vercel-signature');
         // Compute the expected signature
-        // $computedSignature = hash_hmac('sha256', $rawBody, $settings->vercelWebhookToken);
+        $computedSignature = hash_hmac('sha256', $rawBody, $settings->vercelWebhookToken);
 
         // Compare signatures
-        // if (!hash_equals($computedSignature, $receivedSignature)) {
-        //     Craft::error('Signature mismatch. Computed: ' . $computedSignature . ', Received: ' . $receivedSignature, 'revalidate');
-        //     throw new UnauthorizedHttpException('Invalid signature');
-        // }
+        if (!hash_equals($computedSignature, $receivedSignature)) {
+            Craft::error('Signature mismatch. Computed: ' . $computedSignature . ', Received: ' . $receivedSignature, 'revalidate');
+            throw new UnauthorizedHttpException('Invalid signature');
+        }
 
 
 
