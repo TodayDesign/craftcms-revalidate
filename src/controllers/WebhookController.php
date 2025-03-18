@@ -14,8 +14,6 @@ class WebhookController extends Controller
     public function beforeAction($action): bool
     {
 
-        Craft::info('Action ID: ' . $action->id, 'revalidate');
-
         // if ($action->id === 'vercel') {
         //     $this->enableCsrfValidation = false;
         // }
@@ -32,16 +30,23 @@ class WebhookController extends Controller
         $settings = Craft::$app->getPlugins()->getPlugin('revalidate')->getSettings();
 
         $request = Craft::$app->getRequest();
-        $data = json_decode($request->getRawBody(), true);
-        $secretToken = $request->headers->get('X-Vercel-Signature');
+        $rawBody = $request->getRawBody();
+        $data = json_decode($rawBody, true);
+        // $receivedSignature = $request->headers->get('x-vercel-signature');
+        // Compute the expected signature
+        // $computedSignature = hash_hmac('sha256', $rawBody, $settings->vercelWebhookToken);
 
-        // Log the received secret token and the expected token
-        Craft::info('Received secret token: ' . $secretToken, 'revalidate');
-        Craft::info('Expected secret token: ' . $settings->vercelWebhookToken, 'revalidate');
+        // Compare signatures
+        // if (!hash_equals($computedSignature, $receivedSignature)) {
+        //     Craft::error('Signature mismatch. Computed: ' . $computedSignature . ', Received: ' . $receivedSignature, 'revalidate');
+        //     throw new UnauthorizedHttpException('Invalid signature');
+        // }
 
-        if ($secretToken !== $settings->vercelWebhookToken) {
-            throw new UnauthorizedHttpException('Invalid token');
-        }
+
+
+        // if ($secretToken !== $settings->vercelWebhookToken) {
+        //     throw new UnauthorizedHttpException('Invalid token');
+        // }
 
         $status = new DeploymentStatus();
         $status->type = $data['type'];
