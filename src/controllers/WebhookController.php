@@ -50,19 +50,20 @@ class WebhookController extends Controller
 
         $status = new DeploymentStatus();
         $status->type = $data['type'];
-        $status->createdAt = $data['createdAt'];
 
-        // Log the data response
-        Craft::info('Data response: ' . json_encode($data), 'revalidate');
+        // Convert Vercel's millisecond timestamp to a proper datetime format
+        if (isset($data['createdAt'])) {
+            // Convert milliseconds to seconds and format as datetime
+            $timestamp = (int)($data['createdAt'] / 1000);
+            $status->createdAt = date('Y-m-d H:i:s', $timestamp);
+        }
+
+
 
         if ($status->validate()) {
             Craft::$app->db->createCommand()
                 ->insert('{{%revalidate_deployment_status}}', $status->toArray(['type', 'createdAt']))
                 ->execute();
-        } else {
-            // Log validation errors
-            $errors = $status->getErrors();
-            Craft::error('Deployment status validation failed: ' . json_encode($errors), 'revalidate');
         }
 
         return $this->asJson(['success' => true]);
