@@ -28,25 +28,24 @@ class WebhookController extends Controller
         $this->requirePostRequest();
 
         $settings = Craft::$app->getPlugins()->getPlugin('revalidate')->getSettings();
-
+        $secretToken = $settings->vercelWebhookToken;
         $request = Craft::$app->getRequest();
         $rawBody = $request->getRawBody();
         $data = json_decode($rawBody, true);
         $receivedSignature = $request->headers->get('x-vercel-signature');
-        // Compute the expected signature
-        $computedSignature = hash_hmac('sha256', $rawBody, $settings->vercelWebhookToken);
+    
+        // Create HMAC-SHA1 hash with hexadecimal output
+        $computedSignature = hash_hmac('sha1', $rawBody, $secretToken, false); // false = hex output (default)
+            
+        // Log for debugging
+        Craft::info('Secret token: ' . $secretToken, 'revalidate');
+        Craft::info('Computed SHA-1 HMAC: ' . $computedSignature, 'revalidate');
+        Craft::info('Received: ' . $receivedSignature, 'revalidate');
 
-        // Compare signatures
-        if (!hash_equals($computedSignature, $receivedSignature)) {
-            Craft::error('Signature mismatch. Computed: ' . $computedSignature . ', Received: ' . $receivedSignature, 'revalidate');
-            throw new UnauthorizedHttpException('Invalid signature');
+
+        if (hash_equals($computedSignature, $receivedSignature)) {
+            throw new UnauthorizedHttpException('Invalid token');
         }
-
-
-
-        // if ($secretToken !== $settings->vercelWebhookToken) {
-        //     throw new UnauthorizedHttpException('Invalid token');
-        // }
 
         $status = new DeploymentStatus();
         $status->type = $data['type'];
