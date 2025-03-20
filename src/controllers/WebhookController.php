@@ -15,10 +15,9 @@ class WebhookController extends Controller
     public function beforeAction($action): bool
     {
 
-        // if ($action->id === 'vercel') {
-        //     $this->enableCsrfValidation = false;
-        // }
-        $this->enableCsrfValidation = false;
+        if ($action->id === 'vercel') {
+            $this->enableCsrfValidation = false;
+        }
         
         return parent::beforeAction($action);
     }
@@ -38,12 +37,6 @@ class WebhookController extends Controller
         // Create HMAC-SHA1 hash with hexadecimal output
         $computedSignature = hash_hmac('sha1', $rawBody, $secretToken, false); // false = hex output (default)
             
-        // Log for debugging
-        Craft::info('Secret token: ' . $secretToken, 'revalidate');
-        Craft::info('Computed SHA-1 HMAC: ' . $computedSignature, 'revalidate');
-        Craft::info('Received: ' . $receivedSignature, 'revalidate');
-
-
         if ($computedSignature !== $receivedSignature) {
             throw new UnauthorizedHttpException('Invalid token');
         }
@@ -79,8 +72,6 @@ class WebhookController extends Controller
             $timestamp = (int)($data['createdAt'] / 1000);
             $status->createdAt = date('Y-m-d H:i:s', $timestamp);
         }
-
-
 
         if ($status->validate()) {
             Craft::$app->db->createCommand()
