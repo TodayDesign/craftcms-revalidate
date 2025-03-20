@@ -43,8 +43,30 @@ class WebhookController extends Controller
         Craft::info('Received: ' . $receivedSignature, 'revalidate');
 
 
-        if (hash_equals($computedSignature, $receivedSignature)) {
+        if ($computedSignature !== $receivedSignature) {
             throw new UnauthorizedHttpException('Invalid token');
+        }
+
+        $ENV = App::env('ENVIRONMENT');
+
+        $craftEnvironment = "production";
+        if ($ENV.includes('stg')) {
+            $craftEnvironment = "staging";
+        } else if ($ENV.includes('dev')) {
+            $craftEnvironment = "develop";
+        }
+
+        $deploymentBranch = $data['payload']['deployment']['meta']['githubCommitRef'];
+        $deploymentEnvironment = 'production';
+        if ($deploymentBranch.includes('staging')) {
+            $deploymentEnvironment = 'staging';
+        } else if ($deploymentBranch.includes('develop')) {
+            $deploymentEnvironment = 'develop';
+        }
+
+        // If the deployment environment is not the same as the Craft environment, return
+        if ($craftEnvironment !== $deploymentEnvironment) {
+            return $this->asJson(['success' => false]);
         }
 
         $status = new DeploymentStatus();
