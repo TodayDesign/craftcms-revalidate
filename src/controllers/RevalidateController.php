@@ -100,6 +100,11 @@ class RevalidateController extends Controller
         $status = Craft::$app->getPlugins()->getPlugin('revalidate')->getService()->getLatestDeploymentStatus();
         
         if ($status) {
+            // Format the date and time exactly as Twig would
+            $view = Craft::$app->getView();
+            $formattedDate = $view->renderString('{{ date|date }}', ['date' => $status->createdAt]);
+            $formattedTime = $view->renderString('{{ date|time("short") }}', ['date' => $status->createdAt]);
+            
             return $this->asJson([
                 'success' => true,
                 'status' => [
@@ -107,8 +112,7 @@ class RevalidateController extends Controller
                     'label' => $status->getLabel(),
                     'color' => $status->getColor(),
                     'createdAt' => $status->createdAt,
-                    'formattedDate' => Craft::$app->getFormatter()->asDate($status->createdAt, 'short'),
-                    'formattedTime' => Craft::$app->getFormatter()->asTime($status->createdAt, 'short')
+                    'formattedDateTime' => $formattedDate . ', ' . $formattedTime
                 ]
             ]);
         }

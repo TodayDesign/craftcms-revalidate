@@ -55,7 +55,7 @@
               // Update content
               statusLabel.textContent = data.status.label;
               statusIndicator.style.backgroundColor = data.status.color;
-              statusTimestamp.textContent = data.status.formattedDate + ', ' + data.status.formattedTime;
+              statusTimestamp.textContent = data.status.formattedDateTime;
               
               // Add pulsing animation if deploying
               if (data.status.type === 'deployment.created') {
