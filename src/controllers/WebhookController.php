@@ -6,6 +6,7 @@ use craft\web\Controller;
 use yii\web\Response;
 use yii\web\UnauthorizedHttpException;
 use today\revalidate\models\DeploymentStatus;
+use craft\helpers\App;
 
 class WebhookController extends Controller
 {
@@ -50,17 +51,17 @@ class WebhookController extends Controller
         $ENV = App::env('ENVIRONMENT');
 
         $craftEnvironment = "production";
-        if ($ENV.includes('stg')) {
+        if (str_contains($ENV, 'stg')) {
             $craftEnvironment = "staging";
-        } else if ($ENV.includes('dev')) {
+        } else if (str_contains($ENV, 'dev')) {
             $craftEnvironment = "develop";
         }
 
         $deploymentBranch = $data['payload']['deployment']['meta']['githubCommitRef'];
         $deploymentEnvironment = 'production';
-        if ($deploymentBranch.includes('staging')) {
+        if (str_contains($deploymentBranch, 'staging')) {
             $deploymentEnvironment = 'staging';
-        } else if ($deploymentBranch.includes('develop')) {
+        } else if (str_contains($deploymentBranch, 'develop')) {
             $deploymentEnvironment = 'develop';
         }
 
