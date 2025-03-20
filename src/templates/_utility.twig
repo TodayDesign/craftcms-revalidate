@@ -14,14 +14,85 @@
     <br>
     <input type="submit" class="btn submit" value="Submit">
   </form>
-  {% if status %}
-    <div style="max-width: 600px; display: flex; align-items: center; gap: 12px; margin-top: var(--l); padding: var(--m); border-radius: 4px; background-color: var(--gray-050); box-shadow: 0 0 0 1px #cdd8e4;">
-      <span class="status-indicator" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: {{ status.color }};"></span>
-      <span>{{ status.label }}</span>
-      <span style="flex: auto;"></span>
-      <span style="color: var(--light-text-color);">{{ status.createdAt|date }}, {{ status.createdAt|time('short') }}</span>
+  <div id="deployment-status-container" {% if not status %}style="display: none;"{% endif %}>
+    <div id="deployment-status" style="max-width: 600px; display: flex; align-items: center; gap: 12px; margin-top: var(--l); padding: var(--m); border-radius: 4px; background-color: var(--gray-050); box-shadow: 0 0 0 1px #cdd8e4;">
+      {% if status %}
+        <span class="status-indicator" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: {{ status.color }};"></span>
+        <span id="status-label">{{ status.label }}</span>
+        <span style="flex: auto;"></span>
+        <span id="status-timestamp" style="color: var(--light-text-color);">{{ status.createdAt|date }}, {{ status.createdAt|time('short') }}</span>
+      {% endif %}
     </div>
-  {% endif %}
+  </div>
+  
+  <script type="text/javascript">
+    (function() {
+      const deploymentStatusContainer = document.getElementById('deployment-status-container');
+      const deploymentStatus = document.getElementById('deployment-status');
+      const statusLabel = document.getElementById('status-label');
+      const statusIndicator = document.querySelector('.status-indicator');
+      const statusTimestamp = document.getElementById('status-timestamp');
+      
+      let lastType = '{{ status ? status.type : "" }}';
+      
+      function updateDeploymentStatus() {
+        fetch('/api/latest-deployment-status', {
+          headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.status) {
+            // Only update UI if status has changed
+            if (data.status.type !== lastType) {
+              lastType = data.status.type;
+              
+              // Show the container if hidden
+              deploymentStatusContainer.style.display = '';
+              
+              // Update content
+              statusLabel.textContent = data.status.label;
+              statusIndicator.style.backgroundColor = data.status.color;
+              statusTimestamp.textContent = data.status.formattedDate + ', ' + data.status.formattedTime;
+              
+              // Add pulsing animation if deploying
+              if (data.status.type === 'deployment.created') {
+                statusIndicator.classList.add('pulse');
+              } else {
+                statusIndicator.classList.remove('pulse');
+              }
+            }
+          }
+        })
+        .catch(error => console.error('Error fetching deployment status:', error));
+      }
+      
+      // Add pulsing animation if deploying
+      if (lastType === 'deployment.created') {
+        statusIndicator.classList.add('pulse');
+      }
+      
+      // Initial check after 5 seconds, then every 10 seconds
+      setTimeout(updateDeploymentStatus, 5000);
+      setInterval(updateDeploymentStatus, 10000);
+      
+      // Add pulsing animation style
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes pulse {
+          0% { opacity: 0.5; }
+          50% { opacity: 1; }
+          100% { opacity: 0.5; }
+        }
+        .pulse {
+          animation: pulse 2s infinite ease-in-out;
+        }
+      `;
+      document.head.appendChild(style);
+    })();
+  </script>
 
   <!-- Revalidate paths -->
   <h2 style="margin-top:40px">Revalidate paths</h2>

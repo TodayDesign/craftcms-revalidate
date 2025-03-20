@@ -90,6 +90,7 @@ class Revalidate extends Plugin
                 function(RegisterUrlRulesEvent $event) {
                     $event->rules = array_merge($event->rules, [
                         'GET api/scheduled-entries' => 'revalidate/scheduled-entries/resolve-request',
+                        'GET api/latest-deployment-status' => 'revalidate/revalidate/get-latest-deployment-status',
                     ]);
                 }
             );

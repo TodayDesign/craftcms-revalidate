@@ -92,4 +92,29 @@ class RevalidateController extends Controller
 
         return $this->redirect(UrlHelper::url('utilities/'.RevalidateUtility::id()));
     }
+    
+    public function actionGetLatestDeploymentStatus()
+    {
+        $this->requireAcceptsJson();
+        
+        $status = Craft::$app->getPlugins()->getPlugin('revalidate')->getService()->getLatestDeploymentStatus();
+        
+        if ($status) {
+            return $this->asJson([
+                'success' => true,
+                'status' => [
+                    'type' => $status->type,
+                    'label' => $status->getLabel(),
+                    'color' => $status->getColor(),
+                    'createdAt' => $status->createdAt,
+                    'formattedDate' => Craft::$app->getFormatter()->asDate($status->createdAt, 'short'),
+                    'formattedTime' => Craft::$app->getFormatter()->asTime($status->createdAt, 'short')
+                ]
+            ]);
+        }
+        
+        return $this->asJson([
+            'success' => false
+        ]);
+    }
 }
