@@ -11,6 +11,7 @@ use craft\elements\Entry;
 use GuzzleHttp\Client;
 use craft\helpers\Json;
 use today\revalidate\jobs\PrefetchTask;
+use today\revalidate\jobs\RevalidateTask;
 
 class RevalidateService extends Component
 {
@@ -114,7 +115,10 @@ class RevalidateService extends Component
 
     // Revalidate paths and tags if they exist
     if (count($paths) > 0 || count($tags) > 0) {
-      $this->revalidate($siteUrl, [ 'paths' => $paths, 'tags' => $tags ]);
+      $revalidateTask = new RevalidateTask($siteUrl, [ 'paths' => $paths, 'tags' => $tags ]);
+      Craft::$app->queue->ttr(3600);
+      Craft::$app->queue->priority(1024);
+      Craft::$app->queue->push($revalidateTask);
 
       if ($settings->prefetch) {
         // Deduplicate paths
@@ -126,11 +130,11 @@ class RevalidateService extends Component
           // Remove any double slashes
           $url = preg_replace('#([^:])//+#', '$1/', $url);
 
-          $task = new PrefetchTask($url);
+          $prefetchTask = new PrefetchTask($url);
 
           Craft::$app->queue->ttr(3600);
           Craft::$app->queue->priority(1024);
-          Craft::$app->queue->push($task);
+          Craft::$app->queue->push($prefetchTask);
         }
       }
     }
@@ -177,7 +181,7 @@ class RevalidateService extends Component
     }
   }
 
-  public function revalidate($siteUrl = '', $query = [ 'paths' => [], 'tags' => [] ]) {
+  public function revalidate($siteUrl = '', $query = [ 'paths' => [], 'tags' => [] ], $isTask = false) {
     try {
       $settings = $this->getSettings();
       $client = new Client();
@@ -209,13 +213,24 @@ class RevalidateService extends Component
           throw new \Exception($json['errors'][0]['message']);
         }
 
-        // Revalidate successful
-        $this->setSessionNotice('Revalidate successful');
+        if ($isTask) {
+          // Log success
+          Craft::info('Revalidate successful', 'revalidate');
+        } else {
+          // If not a job, set session notice
+          $this->setSessionNotice('Revalidate successful');
+        }
       } else {
         throw new \Exception('Revalidate failed');
       }
     } catch (\Exception $e) {
-      $this->setSessionError($e->getMessage());
+      if ($isTask) {
+        // Log error
+        Craft::error('Revalidate failed: ' . $e->getMessage(), 'revalidate');
+        throw $e;
+      } else {
+        $this->setSessionError($e->getMessage());
+      }
     }
   }
 
