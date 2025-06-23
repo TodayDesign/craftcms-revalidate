@@ -19,11 +19,13 @@ class PrefetchTask extends BaseJob
      * @var string
      */
     public $url = '';
+    public $delay = 0;
 
     // Public Methods
     // =========================================================================
-    function __construct($url) {
+    function __construct($url, $delay = 0) {
         $this->url = $url;
+        $this->delay = $delay;
     }
 
     /**
@@ -37,6 +39,11 @@ class PrefetchTask extends BaseJob
      */
     public function execute($queue): void
     {
+        // Apply delay if specified
+        if ($this->delay > 0) {
+            sleep($this->delay);
+        }
+        
         // Do work here
         $service = new RevalidateService();
         $result = $service->prefetchUrl($this->url);

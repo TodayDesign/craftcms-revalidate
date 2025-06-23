@@ -27,4 +27,17 @@ class Settings extends Model
 
   /** @var string */
   public $httpMethod = 'POST';
+
+  /** @var int */
+  public $delay = 0;
+
+  /**
+   * @inheritdoc
+   */
+  public function rules(): array
+  {
+    return [
+      ['delay', 'integer', 'min' => 0, 'max' => 60],
+    ];
+  }
 }

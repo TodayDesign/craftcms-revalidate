@@ -115,7 +115,7 @@ class RevalidateService extends Component
 
     // Revalidate paths and tags if they exist
     if (count($paths) > 0 || count($tags) > 0) {
-      $revalidateTask = new RevalidateTask($siteUrl, [ 'paths' => $paths, 'tags' => $tags ]);
+      $revalidateTask = new RevalidateTask($siteUrl, [ 'paths' => $paths, 'tags' => $tags ], $settings->delay);
       Craft::$app->queue->ttr(3600);
       Craft::$app->queue->priority(1024);
       Craft::$app->queue->push($revalidateTask);
@@ -130,7 +130,7 @@ class RevalidateService extends Component
           // Remove any double slashes
           $url = preg_replace('#([^:])//+#', '$1/', $url);
 
-          $prefetchTask = new PrefetchTask($url);
+          $prefetchTask = new PrefetchTask($url, $settings->delay);
 
           Craft::$app->queue->ttr(3600);
           Craft::$app->queue->priority(1024);
@@ -259,20 +259,24 @@ class RevalidateService extends Component
   }
 
   public function prefetchUrl($url) {
-    // If `siteUrl` contains `localhost`, use `host.docker.internal` instead
-    if (strpos($url, 'localhost') !== false) {
-      $url = str_replace('localhost', 'host.docker.internal', $url);
-    }
+    try {
+      // If `siteUrl` contains `localhost`, use `host.docker.internal` instead
+      if (strpos($url, 'localhost') !== false) {
+        $url = str_replace('localhost', 'host.docker.internal', $url);
+      }
 
-    $client = new Client();
-    $response = $client->request('GET', $url);
+      $client = new Client();
+      $response = $client->request('GET', $url);
 
-    if ($response->getStatusCode() == 200) {
-      // Log success
-      Craft::info('Prefetch successful', 'revalidate');
-    } else {
+      if ($response->getStatusCode() == 200) {
+        // Log success
+        Craft::info('Prefetch successful', 'revalidate');
+      } else {
+        throw new \Exception('Prefetch failed with status code: ' . $response->getStatusCode());
+      }
+    } catch (\Exception $e) {
       // Log error
-      Craft::error('Prefetch failed', 'revalidate');
+      Craft::error('Prefetch failed: ' . $e->getMessage(), 'revalidate');
     }
   }
 }
