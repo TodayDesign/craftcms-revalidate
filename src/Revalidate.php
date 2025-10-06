@@ -88,6 +88,23 @@ class Revalidate extends Plugin
                     ]);
                 }
             );
+
+            if (Craft::$app->plugins->isPluginInstalled('retour')) {
+                $redirectEvents = [
+                    [\nystudio107\retour\services\Redirects::class, \nystudio107\retour\services\Redirects::EVENT_AFTER_SAVE_REDIRECT],
+                    [\nystudio107\retour\services\Redirects::class, \nystudio107\retour\services\Redirects::EVENT_AFTER_DELETE_REDIRECT],
+                ];
+
+                foreach ($redirectEvents as $redirectEvent) {
+                    Event::on(
+                        $redirectEvent[0],
+                        $redirectEvent[1],
+                        function(\nystudio107\retour\events\RedirectEvent $event) { 
+                            $this->getService()->revalidateRedirects();
+                        }
+                    );
+                }
+            }
         }
     }
 
