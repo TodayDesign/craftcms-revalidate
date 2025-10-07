@@ -140,6 +140,18 @@ class RevalidateService extends Component
     }
   }
 
+  public function revalidateRedirects() {
+    $settings = $this->getSettings();
+    $tags = ['redirects'];
+    $paths = [];
+
+    // Revalidate paths and tags
+    $revalidateTask = new RevalidateTask(Craft::$app->sites->currentSite->getBaseUrl(), [ 'paths' => $paths, 'tags' => $tags ], $settings->delay);
+    Craft::$app->queue->ttr(3600);
+    Craft::$app->queue->priority(1024);
+    Craft::$app->queue->push($revalidateTask);
+  }
+
   public function revalidateAll() {
     $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [ 'paths' => ['/*'], 'tags' => ['site-data']]);
   }
