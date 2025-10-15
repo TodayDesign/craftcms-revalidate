@@ -155,7 +155,7 @@ class RevalidateService extends Component
   public function revalidateSitemap() {
     $settings = $this->getSettings();
     $tags = ['sitemap'];
-    $paths = [];
+    $paths = ['/custom.xml'];
 
     // Revalidate paths and tags
     $revalidateTask = new RevalidateTask(Craft::$app->sites->currentSite->getBaseUrl(), [ 'paths' => $paths, 'tags' => $tags ], $settings->delay);
