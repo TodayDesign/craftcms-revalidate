@@ -123,15 +123,23 @@ class RevalidateService extends Component
     }
   }
 
-  public function revalidateAll() {
-    $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [ 'paths' => ['/*'], 'tags' => ['site-data']]);
+  public function revalidateSitemap($siteUrl = '') {
+    $tags = ['sitemap'];
+    $paths = ['/custom.xml'];
+
+    // Revalidate paths and tags
+    $this->revalidate($siteUrl ?: Craft::$app->sites->currentSite->getBaseUrl(), [ 'paths' => $paths, 'tags' => $tags ]);
   }
 
-  public function revalidateSiteData() {
-    $this->revalidate(Craft::$app->sites->currentSite->getBaseUrl(), [  'paths' => [], 'tags' => ['site-data']]);
+  public function revalidateAll($siteUrl = '') {
+    $this->revalidate($siteUrl ?: Craft::$app->sites->currentSite->getBaseUrl(), [ 'paths' => ['/*'], 'tags' => ['site-data']]);
   }
 
-  public function deploy() {
+  public function revalidateSiteData($siteUrl = '') {
+    $this->revalidate($siteUrl ?: Craft::$app->sites->currentSite->getBaseUrl(), [  'paths' => [], 'tags' => ['site-data']]);
+  }
+
+  public function deploy($siteId = null) {
     try {
       // Rebuild app in Vercel
       $client = new Client();
@@ -141,7 +149,31 @@ class RevalidateService extends Component
         throw new \Exception('Vercel deploy hook URL not set');
       }
 
-      $response = $client->request('GET', $settings->vercelDeployHookUrl);
+      // Determine which deploy hook URL to use
+      $deployHookUrl = $settings->vercelDeployHookUrl;
+      
+      // If vercelDeployHookUrl is an array, select based on site handle
+      if (is_array($deployHookUrl)) {
+        $siteHandle = 'default';
+        
+        if ($siteId) {
+          $site = Craft::$app->sites->getSiteById($siteId);
+          if ($site) {
+            $siteHandle = $site->handle;
+          }
+        }
+        
+        // Use site handle if it exists in the array, otherwise fall back to 'default'
+        if (isset($deployHookUrl[$siteHandle])) {
+          $deployHookUrl = $deployHookUrl[$siteHandle];
+        } elseif (isset($deployHookUrl['default'])) {
+          $deployHookUrl = $deployHookUrl['default'];
+        } else {
+          throw new \Exception('Vercel deploy hook URL not found for site handle "' . $siteHandle . '" and no default URL set');
+        }
+      }
+
+      $response = $client->request('GET', $deployHookUrl);
 
       if ($response->getStatusCode() == 201) {
         $body = $response->getBody()->getContents();
